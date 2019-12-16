@@ -17,20 +17,29 @@ def undercon(G, k):
 
 def subsumed(G, k):
     to_be_removed = []
+    all_nodes = set(G)
     for n in G:
-        n_list = [] 
-        for i in G[n]:
-            n_list.append(i)
+        n_edges = set(G[n])
+        for m in all_nodes:
+            if n == m:
+                continue
+            m_edges = set(G[m])
 
-        for m in G:
-            m_list = []
-            if m != n:
-                for j in G[m]:
-                    m_list.append(j)
+            if n_edges.issubset(m_edges):
+                to_be_removed.append(n)
+                all_nodes.remove(n)
+                break
 
-                if set(m_list).issubset(set(n_list)) and len(m_list) > k-1:
-                    if m not in to_be_removed:
-                        to_be_removed.append(m)
+
+    #     for m in G:
+    #         m_list = []
+    #         if m != n:
+    #             for j in G[m]:
+    #                 m_list.append(j)
+
+    #             if set(m_list).issubset(set(n_list)): #and len(m_list) > k-1:
+    #                 if m not in to_be_removed:
+    #                     to_be_removed.append(m)
 
     for node in to_be_removed:
         G.remove_node(node)
@@ -39,6 +48,7 @@ def subsumed(G, k):
 
 
 def cliques_of_size(G, n):
+
     cliques = []
     for clique in nx.find_cliques(G):
         if len(clique) == n:
@@ -62,49 +72,63 @@ def symmetry(G, k):
     mergable = get_mergable_nodes(cliques, k)
 
     mergable_nodes = list(map(list, mergable))
+
     while mergable_nodes:
         node_a, node_b = mergable_nodes.pop()
+
+        if node_a == node_b:
+            continue
+
         G = nx.contracted_nodes(G, node_a, node_b)
 
         for i in range(len(mergable_nodes)):
             if mergable_nodes[i][0] == node_b:
                 mergable_nodes[i][0] = node_a
-            elif mergable_nodes[i][1] == node_b:
+            if mergable_nodes[i][1] == node_b:
                 mergable_nodes[i][1] = node_a
                 
     return G
 
-def gen_random_graph(N, K):
+def create_edge(G, K, node_1, node_2):
+    if node_1 != node_2:
+        G.add_edge(node_1, node_2)
+    
+    for clique in nx.cliques_containing_node(G, nodes=node_1):
+        if node_2 in clique and len(clique) > K:
+            G.remove_edge(node_1, node_2)
+            break
+        
+    return G
+
+def average_degree(G):
+    return sum(dict(G.degree()).values()) / len(G)
+
+def reduce_graph(G, K):
+    n_nodes = len(G)
+    while True:
+        G = subsumed(G, K)
+        G = symmetry(G, K)
+        G = undercon(G, K)
+        if len(G) == n_nodes:
+            break
+        n_nodes = len(G)
+    return G
+
+def gen_random_graph(N, K, P):
     G = nx.Graph()
     G.add_nodes_from(range(N))
     
-    Somenodes = random.randrange(N)
-    flag = 0
-    
-    for i in G:
-        flag = 0
-        for j in nx.cliques_containing_node(G, nodes=i): 
-            if len(j) > K-1:  # JELLE: KLOPT DIT WEL? 
-                flag = 1 
-                break
-        if flag == 1:
-            continue
-        rnum = random.randrange(10*K) # VRAAG AAN JELLE: IK HEB DEZE KEUZE GEMAAKT
-        for count in range(rnum):
-            flag = 0
-            randomnode = random.randrange(N)
-            if randomnode!= i:
-                for a in nx.cliques_containing_node(G, nodes=randomnode):
-                    if len(a) > K-1:
-                        flag = 1
-                        break
-                if flag == 1:
-                    continue
+    for node_1 in G:
+        for node_2 in G:
+            p = P / N
+            if random.random() < p:
+                G = create_edge(G, K, node_1, node_2)
+
+    G = reduce_graph(G, K)
                 
-                ran = random.random()
-                if ran > 0.5:
-                    G.add_edge(i,randomnode)
     return G
+
+
 
 
 

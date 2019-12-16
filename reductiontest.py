@@ -423,7 +423,7 @@ class TestSymmetry(unittest.TestCase):
 		self.assertEqual(F.edges(), G.edges())
 
 	def test_symmetry_4K_2(self):
-		# This is a merable graph for 3K but not for 4K.
+		# This is a mergeable graph for 3K but not for 4K.
 		# Checks whether the function doesn't remove too much.
 		G = nx.Graph()
 		G.add_edge(0,1)
@@ -447,6 +447,49 @@ class TestSymmetry(unittest.TestCase):
 
 		self.assertEqual(F.edges(), G.edges())
 
+
+	def test_create_edge_1(self):
+		# This is a graph where if the edge between 1 and 4 is created
+		# the max clique would be bigger than 3. So no edge is formed.
+
+		G = nx.Graph()
+		G.add_edge(0,1)
+		G.add_edge(0,2)
+		G.add_edge(0,4)
+		G.add_edge(1,2)
+		G.add_edge(2,4)
+
+		G = functions.create_edge(G, 3, 1, 4)
+
+		F = nx.Graph()
+		F.add_edge(0,1)
+		F.add_edge(0,2)
+		F.add_edge(0,4)
+		F.add_edge(1,2)
+		F.add_edge(2,4)
+
+		self.assertEqual(F.edges(), G.edges())
+
+
+	def test_create_edge_2(self):
+		# An edge is formed between 0 and 2.
+
+		G = nx.Graph()
+		G.add_edge(0,1)
+		G.add_edge(0,4)
+		G.add_edge(1,2)
+		G.add_edge(2,4)
+
+		G = functions.create_edge(G, 3, 0, 2)
+
+		F = nx.Graph()
+		F.add_edge(0,1)
+		F.add_edge(0,4)
+		F.add_edge(1,2)
+		F.add_edge(2,4)
+		F.add_edge(0,2)
+
+		self.assertEqual(F.edges(), G.edges())
 
 
 if __name__ == '__main__':
