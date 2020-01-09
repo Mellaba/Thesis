@@ -30,17 +30,6 @@ def subsumed(G, k):
                 all_nodes.remove(n)
                 break
 
-
-    #     for m in G:
-    #         m_list = []
-    #         if m != n:
-    #             for j in G[m]:
-    #                 m_list.append(j)
-
-    #             if set(m_list).issubset(set(n_list)): #and len(m_list) > k-1:
-    #                 if m not in to_be_removed:
-    #                     to_be_removed.append(m)
-
     for node in to_be_removed:
         G.remove_node(node)
     
