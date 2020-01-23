@@ -117,6 +117,20 @@ def gen_random_graph(N, K, P):
                 
     return G
 
+def gen_random_graph_all_cliques(N, K, P):
+    G = nx.Graph()
+    G.add_nodes_from(range(N))
+    
+    for node_1 in G:
+        for node_2 in G:
+            p = P / N
+            if random.random() < p and node_1 != node_2:
+                G.add_edge(node_1, node_2)
+
+    G = reduce_graph(G, K)
+                
+    return G
+
 
 
 

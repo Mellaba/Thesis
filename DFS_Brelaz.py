@@ -74,7 +74,7 @@ def DFS_color_Brelaz(G, k):
 
         if colors_1 in visited:
             continue
-        if steps > 100000 and len(colors_1) != len(G):
+        if brelaz_steps > 144000 and len(colors_1) != len(G):
             end = time.time()
             runtime = (end - start)
             return {}, brelaz_steps, steps, runtime 
@@ -94,9 +94,9 @@ def DFS_color_Brelaz(G, k):
                     colors_2[node] = color
                     for neighbour in G[node]:
                         distinct_colors_2[neighbour].add(color)
-                    if colors_2 not in visited:
-                        stack.append(colors_2)
-                        d_stack.append(distinct_colors_2)
+
+                    stack.append(colors_2)
+                    d_stack.append(distinct_colors_2)
     
     
     if len(colors_1) == len(G):
@@ -109,6 +109,74 @@ def DFS_color_Brelaz(G, k):
         runtime = (end - start)
         return {}, brelaz_steps, steps, runtime
 
+def DFS_color_Random(G, k):
+    start = time.time()
+    colors = {}
+
+    distinct_colors = {v: set() for v in G}
+
+    stack = []
+    d_stack = []
+    visited = []
+    steps = 0
+    still_to_be_colored = []
+
+    for node1 in G:
+        still_to_be_colored.append(node1)
+
+    i = random.randrange(len(still_to_be_colored))
+    node = F[i]
+    
+    for color in range(k):
+        colors_2 = copy.deepcopy(colors)
+        if color not in distinct_colors[node]:
+            distinct_colors_2 = copy.deepcopy(distinct_colors)
+            colors_2[node] = color
+            for neighbour in G[node]:
+                distinct_colors_2[neighbour].add(color)
+            stack.append(colors_2)
+            d_stack.append(distinct_colors_2)
+                    
+    while stack:
+        colors_1 = stack.pop()
+        steps += 1
+
+        if colors_1 in visited:
+            continue
+        if steps > 100000 and len(colors_1) != len(G):
+            end = time.time()
+            runtime = (end - start)
+            return {}, steps, runtime 
+        visited.append(colors_1)
+        if len(colors_1) == len(G):
+            end = time.time()
+            runtime = (end - start)
+            return colors_1, steps, runtime
+        distinct_colors = d_stack.pop()
+        nodes = options(G, distinct_colors, colors_1)
+
+
+        for color in range(k): 
+            colors_2 = copy.deepcopy(colors_1)
+            if color not in distinct_colors[node]:
+                distinct_colors_2 = copy.deepcopy(distinct_colors)
+                colors_2[node] = color
+                for neighbour in G[node]:
+                    distinct_colors_2[neighbour].add(color)
+
+                stack.append(colors_2)
+                d_stack.append(distinct_colors_2)
+    
+    
+    if len(colors_1) == len(G):
+        end = time.time()
+        runtime = (end - start)
+        return colors_1, steps, runtime
+    
+    if stack == [] and len(colors_1) != len(G):
+        end = time.time()
+        runtime = (end - start)
+        return {}, steps, runtime
 
 def split_filename(filename):
     parts = filename.split('_')
@@ -118,9 +186,14 @@ def split_filename(filename):
     
     return degree, nodes, p
 
-for filename in os.listdir("4K_graphs"):
+output = []
+for filename in os.listdir("4K_graphs_all_cliques"):
+    if filename.startswith('.'):
+        continue
+    flag = 0
     degree, nodes, p = split_filename(filename)
-    name = "/Users/melanie/Documents/Thesis/Programming/4K_graphs/" + str(filename)
+
+    name = "/Users/melanie/Documents/Thesis/Programming/4K_graphs_all_cliques/" + str(filename)
     G=nx.read_edgelist(name)
     colorlist, brelaz_steps, steps, runtime = DFS_color_Brelaz(G, 4)
     
@@ -133,9 +206,12 @@ for filename in os.listdir("4K_graphs"):
         "steps": steps,
         "runtime":runtime
     }
+
     
-    with open('coloured_4K_graphs.json', 'a') as outfile:
+    with open('Brelazsteps_all_cliques_coloured_4K_graphs_DFS_Brelaz.json', 'a') as outfile:
         json.dump(data, outfile, indent=2)
+        outfile.write(',')
+
 
 
 
