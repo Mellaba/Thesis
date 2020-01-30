@@ -11,7 +11,7 @@ def undercon(G, k):
             to_be_removed.append(n)
 
     for node in to_be_removed:       
-        G.remove_node(node) # G.remove_node(n)
+        G.remove_node(node)
     
     return G
 
@@ -42,8 +42,7 @@ def cliques_of_size(G, n):
     for clique in nx.find_cliques(G):
         if len(clique) == n:
             cliques.append(set(clique))
-            # Hier wil ik dus eigenlijk checken of K-1 elementen van lijst 1 overeenkomen met lijst 2. Als dit zo is dan
-            # pak de unique elementen uit beide lijsten en merge deze nodes met elkaar.
+
     return cliques
 
 def get_mergable_nodes(cliques, k):
@@ -127,9 +126,10 @@ def gen_random_graph_all_cliques(N, K, P):
             if random.random() < p and node_1 != node_2:
                 G.add_edge(node_1, node_2)
 
+    degree = average_degree(G)
     G = reduce_graph(G, K)
                 
-    return G
+    return G, degree
 
 
 

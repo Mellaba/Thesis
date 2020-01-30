@@ -74,7 +74,7 @@ def DFS_color_Brelaz(G, k):
 
         if colors_1 in visited:
             continue
-        if brelaz_steps > 144000 and len(colors_1) != len(G):
+        if steps > 100000 and len(colors_1) != len(G):
             end = time.time()
             runtime = (end - start)
             return {}, brelaz_steps, steps, runtime 
@@ -109,6 +109,18 @@ def DFS_color_Brelaz(G, k):
         runtime = (end - start)
         return {}, brelaz_steps, steps, runtime
 
+def random_options(G, alreadycolored):
+    still_to_be_colored = []
+    for nodes in G:
+        still_to_be_colored.append(nodes)
+
+    for allcolored in alreadycolored:
+        still_to_be_colored.remove(allcolored)
+
+    i = random.randrange(len(still_to_be_colored))
+    node = still_to_be_colored[i]
+    return node
+
 def DFS_color_Random(G, k):
     start = time.time()
     colors = {}
@@ -119,14 +131,10 @@ def DFS_color_Random(G, k):
     d_stack = []
     visited = []
     steps = 0
-    still_to_be_colored = []
-
-    for node1 in G:
-        still_to_be_colored.append(node1)
-
-    i = random.randrange(len(still_to_be_colored))
-    node = F[i]
+    alreadycolored = []
     
+    node = random_options(G, alreadycolored)
+
     for color in range(k):
         colors_2 = copy.deepcopy(colors)
         if color not in distinct_colors[node]:
@@ -153,9 +161,9 @@ def DFS_color_Random(G, k):
             runtime = (end - start)
             return colors_1, steps, runtime
         distinct_colors = d_stack.pop()
-        nodes = options(G, distinct_colors, colors_1)
 
-
+        node = random_options(G, colors_1)
+  
         for color in range(k): 
             colors_2 = copy.deepcopy(colors_1)
             if color not in distinct_colors[node]:
@@ -187,28 +195,39 @@ def split_filename(filename):
     return degree, nodes, p
 
 output = []
-for filename in os.listdir("4K_graphs_all_cliques"):
+for filename in os.listdir("4K_CETAL_graphs_w_nullgraphs"):
     if filename.startswith('.'):
         continue
-    flag = 0
+    
     degree, nodes, p = split_filename(filename)
 
-    name = "/Users/melanie/Documents/Thesis/Programming/4K_graphs_all_cliques/" + str(filename)
+    name = "/Users/melanie/Documents/Thesis/Programming/4K_CETAL_graphs_w_nullgraphs/" + str(filename)
     G=nx.read_edgelist(name)
-    colorlist, brelaz_steps, steps, runtime = DFS_color_Brelaz(G, 4)
-    
-    data = {
+    if len(G) == 0:
+        data = {
         "degree": degree,
         "nodes": nodes,
         "p": p,
-        "colorlist": colorlist,
-        "brelazsteps" : brelaz_steps,
-        "steps": steps,
-        "runtime":runtime
-    }
+        "colorlist": {},
+        "brelazsteps": 0,
+        "steps": 0,
+        "runtime": 0
+        }
+    else:     
+        colorlist, brelazsteps, steps, runtime = DFS_color_Brelaz(G, 4)
+        
+        data = {
+            "degree": degree,
+            "nodes": nodes,
+            "p": p,
+            "colorlist": colorlist,
+            "brelazsteps": brelazsteps,
+            "steps": steps,
+            "runtime":runtime
+        }
 
     
-    with open('Brelazsteps_all_cliques_coloured_4K_graphs_DFS_Brelaz.json', 'a') as outfile:
+    with open('coloured_CETAL_graphs_w_nullgraphs.json', 'a') as outfile:
         json.dump(data, outfile, indent=2)
         outfile.write(',')
 
